@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ia>
+	<baseDeRegles>
+		<regle nom="R1">
+			<premisses>
+				<fait nom="Ordre" type="int" valeur="3" question="Quel est l'ordre"/>
+			</premisses>
+			<conclusion nom="Triangle" type="bool"/>
+		</regle>
+		<regle nom="R2">
+			<premisses>
+				<fait nom="Triangle" type="bool"/>
+				<fait nom="Angle Droit" type="bool" question="La figure a-t-elle au moins un angle droit"/>
+			</premisses>
+			<conclusion nom="Triangle Rectangle" type="bool"/>
+		</regle>
+		<regle nom="R3">
+			<premisses>
+				<fait nom="Triangle" type="bool"/>
+				<fait nom="Côtés égaux" type="int" valeur="2" question="Combien la figure a-t-elle de côtés égaux ?"/>
+			</premisses>
+			<conclusion nom="Triangle Isocèle" type="bool"/>
+		</regle>
+		<regle nom="R4">
+			<premisses>
+				<fait nom="Triangle Rectangle" type="bool"/>
+				<fait nom="Triangle Isocèle" type="bool"/>
+			</premisses>
+			<conclusion nom="Triangle Rectangle Isocèle" type="bool"/>
+		</regle>
+		<regle nom="R5">
+			<premisses>
+				<fait nom="Triangle" type="bool"/>
+				<fait  nom="Côtés égaux" type="int" valeur="3" question="Combien la figure a-t-elle de côtés égaux ?"/>
+			</premisses>
+			<conclusion nom="Triangle Equilatéral" type="bool"/>
+		</regle>
+		<regle nom="R6">
+			<premisses>
+				<fait nom="Ordre" type="int" valeur="4" question="Quel est l'ordre"/>
+			</premisses>
+			<conclusion nom="Quadrilatère" type="bool"/>
+		</regle>
+		<regle nom="R7">
+			<premisses>
+				<fait nom="Quadrilatère" type="bool"/>
+				<fait nom="Côtés Parallèles" type="int" valeur="2" question="Combien de côtés sont parallèles entre eux - 0, 2 ou 4" />
+			</premisses>
+			<conclusion nom="Trapèze" type="bool"/>
+		</regle>
+		<regle nom="R8">
+			<premisses>
+				<fait nom="Quadrilatère" type="bool"/>
+				<fait nom="Côtés Parallèles" type="int" valeur="4" question="Combien de côtés sont parallèles entre eux - 0, 2 ou 4" />
+			</premisses>
+			<conclusion nom="Parallélogramme" type="bool"/>
+		</regle>
+		<regle nom="R9">
+			<premisses>
+				<fait nom="Parallélogramme" type="bool"/>
+				<fait nom="Angle Droit" type="bool" question="La figure a-t-elle au moins un angle droit"/>
+			</premisses>
+			<conclusion nom="Rectangle" type="bool"/>
+		</regle>
+		<regle nom="R10">
+			<premisses>
+				<fait nom="Parallélogramme" type="bool"/>
+				<fait  nom="Côtés égaux" type="int" valeur="4" question="Combien la figure a-t-elle de côtés égaux ?"/>
+			</premisses>
+			<conclusion nom="Losange" type="bool"/>
+		</regle>
+		<regle nom="R11">
+			<premisses>
+				<fait nom="Rectangle" type="bool"/>
+				<fait nom="Losange" type="bool"/>
+			</premisses>
+			<conclusion nom="Carré" type="bool"/>
+		</regle>
+	</baseDeRegles>
+</ia>
