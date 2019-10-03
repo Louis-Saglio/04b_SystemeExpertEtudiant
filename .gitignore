@@ -1,2 +1,8 @@
 # Project exclude paths
 /target/
+.idea
+.settings
+bin
+.classpath
+.project
+04b_SystemeExpertEtudiant.iml

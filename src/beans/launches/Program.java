@@ -56,6 +56,10 @@ public class Program implements HumanInterface {
 
 	}
 
+	/**
+	 * Load the xml file into the rule base and the fact base
+	 * Then launch the inference engine
+	 */
 	private void run() {
 		System.out.println("*** Création du moteur ***");
 		Motor m=new Motor(this);
