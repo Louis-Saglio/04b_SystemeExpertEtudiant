@@ -83,12 +83,13 @@ public class Program implements HumanInterface {
 
             m.solve();
 
-            graphBuilder.generate(racine.getChild("baseDeRegles"), m.getfDB());
+            System.out.println(m.getM_usedRules());
+            graphBuilder.generate(racine.getChild("baseDeRegles"), m.getM_usedRules()); // todo
             graphBuilder.export();
 
 
         } catch (Exception exc) {
-            System.err.println(exc.getMessage());
+            exc.printStackTrace();
         }
     }
 

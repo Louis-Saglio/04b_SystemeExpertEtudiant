@@ -78,7 +78,6 @@ public class Motor {
     RulesBase usableRules = new RulesBase(m_rDB);
     //System.out.println("On travaille sur "+usableRules.size()+" règles");
     m_fDB.clear();
-    m_usedRules.clear();
 
     while (true) {
       // on cherche une règle
@@ -111,5 +110,9 @@ public class Motor {
     Element eConcl = eRule.getChild("conclusion");
     IFact concl = FactFactory.fact(eConcl);
     m_rDB.add(new Rule(premisses, concl, nom));
+  }
+
+  public RulesBase getM_usedRules() {
+    return m_usedRules;
   }
 }
