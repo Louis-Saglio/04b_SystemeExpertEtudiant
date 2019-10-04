@@ -34,13 +34,24 @@ public class Motor {
     return m_ihm;
   }
 
+  /**
+   * @param r a rule you whose applicability you want check
+   * @return
+   *  -1 if the rule will never be applicable (premises never true)
+   *
+   */
   public int canApply(Rule r) {
+    System.out.println("Motor.canApply");
+    System.out.println("r = " + r);
     int maxLevel = -1;
+    System.out.println("Are premisses in fact base");
     for (IFact fact : r.getPremisses()) {
+      System.out.println("look for premisse " + fact);
       IFact foundFact = m_fDB.search(fact.name());
       if (foundFact == null) {
         // ce fait n'existe pas dans la base actuellement
         if (fact.question() != null) {
+          // Le fait est un fait primaire
           // on le demande à l'utilisateur et on l'ajoute à la base
           foundFact = FactFactory.fact(fact, this);
           m_fDB.add(foundFact);
@@ -63,7 +74,10 @@ public class Motor {
   }
 
   private Tuple findUsableRule(RulesBase rBase) {
+    System.out.println("Motor.findUsableRule");
+    System.out.println("rBase = " + rBase);
     for (Rule r : rBase) {
+      System.out.println("Is " + r + " applicable ?");
       int level = canApply(r);
       if (level != -1) {
         //Parameters.print("Trouvé la règle "+r,0);
@@ -74,20 +88,27 @@ public class Motor {
   }
 
   public void solve() {
+    System.out.println("Motor.solve");;
     // on fait une copie des règles existantes + création bdf vierge
     RulesBase usableRules = new RulesBase(m_rDB);
-    //System.out.println("On travaille sur "+usableRules.size()+" règles");
+    System.out.println("On travaille sur "+usableRules.size()+" règles");
+    System.out.println(usableRules.toString());
+    System.out.println("Clear fact base");
     m_fDB.clear();
     m_usedRules.clear();
 
     while (true) {
       // on cherche une règle
       Tuple tupl = findUsableRule(usableRules);
+      System.out.println("Solve " + tupl);
       //System.out.println("Choix de la règle "+tupl.r.getName());
-      if (tupl == null)
+      if (tupl == null) {
+        System.out.println("No rule to solve");
         break;
+      }
       // On applique la règle et on ajoute le nouveau fait à la base
       IFact newFact = tupl.r.getConclusion();
+      System.out.println("Conclusion : " + newFact);
       newFact.setLevel(tupl.l + 1);
       m_fDB.add(newFact);
       // on enlève la règle des règles applicables

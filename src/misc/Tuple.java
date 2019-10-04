@@ -11,4 +11,8 @@ public class Tuple {
     this.l = l;
   }
 
+  @Override
+  public String toString() {
+    return "Tuple(" + r + ", " + l + ")";
+  }
 }
