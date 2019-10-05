@@ -40,21 +40,14 @@ public class GraphBuilder {
         .collect(Collectors.toCollection(HashSet::new));
 
     List<Element> children = rules.getChildren();
-    Node firstNode = node(
-        children.get(0)
-            .getChild("premisses")
-            .getChild("fait")
-            .getAttributeValue("nom")
-    ).with(Color.RED);
-    addNode(firstNode);
 
-    for (Element rule : rules.getChildren()) {
+    for (Element rule : children) {
       String ruleName = rule.getAttributeValue("nom");
       Element premiseElements = rule.getChild("premisses");
       Element conclusion = rule.getChild("conclusion");
       String conclusionName = conclusion.getAttributeValue("nom");
 
-      Node ruleNode = node(ruleName).with(Color.LIGHTBLUE);
+      Node ruleNode = node(ruleName).with(Style.FILLED);
 
       HashMap<Node, Link> linkToRuleByPremiseNode = new HashMap<>();
       for (Element premiseElement : premiseElements.getChildren()) {
@@ -74,31 +67,44 @@ public class GraphBuilder {
       // Add colors
       if (ruleNames.contains(ruleName)) {
         // If the rule name is in the list of used rules
-        ruleNode = ruleNode.with(Style.FILLED); // Fill used rules
-        // Since the rule is used, its conclusion is true : color it in green
-        conclusionNode = conclusionNode.with(Style.FILLED).with(Color.rgb(0, 255, 0));
-        // Also color the link between the rule and its conclusion in green
-        linkToConclusion = linkToConclusion.with(Color.rgb(0, 255, 0));
+        ruleNode = ruleNode.with(Color.RED); // Color verified rules in red
+        // Since the rule is used, its conclusion is true : color it in red
+        conclusionNode = conclusionNode.with(Color.RED);
+        // Also color the link between the rule and its conclusion in red
+        linkToConclusion = linkToConclusion.with(Color.RED);
         // Also color links between premises and validated rule
-        linkToRuleByPremiseNode.replaceAll((k, v) -> v.with(Color.rgb(0, 255, 0)));
+        for (Map.Entry<Node, Link> nodeLinkEntry : new HashMap<>(linkToRuleByPremiseNode).entrySet()) {
+          linkToRuleByPremiseNode.put(
+              nodeLinkEntry
+                  .getKey()
+                  .with(Color.RED),
+              nodeLinkEntry
+                  .getValue()
+                  .with(Color.RED)
+          );
+          linkToRuleByPremiseNode.remove(nodeLinkEntry.getKey());
+        }
+      } else {
+        ruleNode = ruleNode.with(Color.LIGHTBLUE);
       }
+
+      ruleNode = ruleNode.link(linkToConclusion);
 
       for (Map.Entry<Node, Link> nodeLinkEntry : linkToRuleByPremiseNode.entrySet()) {
         Node premiseNode = nodeLinkEntry.getKey().link(nodeLinkEntry.getValue());
         addNode(premiseNode);
       }
 
-      ruleNode = ruleNode.link(linkToConclusion);
-
       addNode(conclusionNode);
       addNode(ruleNode);
     }
-
   }
 
   public void export() throws IOException {
-    Graph g = graph(name).directed()
-        .graphAttr().with(Rank.dir(RankDir.TOP_TO_BOTTOM))
+    Graph g = graph(name)
+        .directed()
+        .graphAttr()
+        .with(Rank.dir(RankDir.TOP_TO_BOTTOM))
         .with(nodes);
 
     Graphviz.fromGraph(g).render(Format.DOT).toFile(new File(name + ".txt"));
