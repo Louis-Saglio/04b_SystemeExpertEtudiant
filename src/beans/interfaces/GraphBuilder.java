@@ -2,6 +2,7 @@ package beans.interfaces;
 
 import beans.regles.Rule;
 import guru.nidi.graphviz.attribute.Color;
+import guru.nidi.graphviz.attribute.Label;
 import guru.nidi.graphviz.attribute.Rank;
 import guru.nidi.graphviz.attribute.Rank.RankDir;
 import guru.nidi.graphviz.attribute.Style;
@@ -52,8 +53,12 @@ public class GraphBuilder {
       HashMap<Node, Link> linkToRuleByPremiseNode = new HashMap<>();
       for (Element premiseElement : premiseElements.getChildren()) {
         String premiseName = premiseElement.getAttributeValue("nom");
+        String premiseValue = premiseElement.getAttributeValue("valeur");
+        if (premiseValue == null) {
+          premiseValue = "";
+        }
         Node premiseNode = node(premiseName);
-        Link linkToRule = to(ruleNode);
+        Link linkToRule = to(ruleNode).with(Label.of(premiseValue));
         // Store ruleNode and a link toward it in a map in order to link them later
         // We cannot link them here because if the rule is verified the link must be in green
         // So, we modify the link in the part of the code which manage the case where the rule is verified
