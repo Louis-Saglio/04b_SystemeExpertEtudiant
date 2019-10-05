@@ -36,9 +36,6 @@ public class GraphBuilder {
     HashSet<String> ruleNames = usedRules.stream()
         .map(Rule::getName)
         .collect(Collectors.toCollection(HashSet::new));
-    HashSet<String> trueFactNames = usedRules.stream()
-        .map(rule1 -> rule1.getConclusion().name())
-        .collect(Collectors.toCollection(HashSet::new));
 
     List<Element> children = rules.getChildren();
 
