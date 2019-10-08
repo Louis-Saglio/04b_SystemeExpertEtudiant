@@ -103,6 +103,9 @@ public class GraphBuilder {
   }
 
   public void export() throws IOException {
+    // The graph generation via the graphviz sdk is bugged.
+    // the preferred hypothesis is a bug in the to function or the Link class
+    // However further investigation is required to confirm or invalidate this hypothesis
     Graph g = graph(name)
         .directed()
         .graphAttr()

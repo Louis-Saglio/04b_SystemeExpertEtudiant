@@ -3,6 +3,7 @@ package beans.launches;
 import beans.faits.FactsBase;
 import beans.faits.IFact;
 import beans.interfaces.GraphBuilder;
+import beans.interfaces.GraphBuilderKt;
 import beans.interfaces.HumanInterface;
 import beans.interfaces.Motor;
 import beans.regles.Rule;
@@ -10,7 +11,6 @@ import beans.regles.RulesBase;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.input.SAXBuilder;
-
 
 import java.io.File;
 import java.util.List;
@@ -25,7 +25,7 @@ public class Program implements HumanInterface {
         int rep = 0;
         try {
             rep = in.nextInt();
-        } catch (Exception exc) {
+        } catch (Exception ignored) {
         }
         return rep;
     }
@@ -34,17 +34,17 @@ public class Program implements HumanInterface {
     public boolean askBoolValue(String question) {
         System.out.print(question + " (yes, no) : ");
         String rep = in.next();
-        return rep.equals("yes") ? true : false;
+        return rep.equals("yes");
     }
 
     @Override
     public String printFacts(FactsBase facts) {
         //System.out.println("Solutions trouvées :");
-        String res = "Base de faits (" + facts.size() + ") :";
+        StringBuilder res = new StringBuilder("Base de faits (" + facts.size() + ") :");
         facts.tri();
         for (IFact fact : facts)
-            res += "\n\t" + fact;
-        return res;
+            res.append("\n\t").append(fact);
+        return res.toString();
     }
 
     @Override
@@ -84,8 +84,10 @@ public class Program implements HumanInterface {
             m.solve();
 
             System.out.println(m.getM_usedRules());
-            graphBuilder.generate(racine.getChild("baseDeRegles"), m.getM_usedRules()); // todo
+            graphBuilder.generate(racine.getChild("baseDeRegles"), m.getM_usedRules());
             graphBuilder.export();
+
+            GraphBuilderKt.generateGraphAsDotCode(racine.getChild("baseDeRegles"), m.getM_usedRules());
 
 
         } catch (Exception exc) {
