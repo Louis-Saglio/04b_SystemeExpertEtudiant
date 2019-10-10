@@ -12,16 +12,20 @@ fun BufferedWriter.writeln(string: String) {
 fun String.quote() = "\"$this\""
 
 
-class DotNode(private val name: String) {
+abstract class AbstractDotNode {
+    protected val attrs = NodeAttrs()
 
-    private val attrs = NodeAttrs()
-
-    override fun toString(): String {
-        return "${name.quote()} $attrs"
-    }
+    abstract override fun toString(): String
 
     fun put(key: String, value: String) {
         attrs[key] = value
+    }
+}
+
+
+class DotNode(val name: String) : AbstractDotNode() {
+    override fun toString(): String {
+        return "${name.quote()} $attrs"
     }
 }
 
@@ -30,10 +34,16 @@ class NodeAttrs : HashMap<String, String>() {
     override fun toString(): String {
         var string = "["
         for (entry in entries) {
-            string += "${entry.key}=${entry.value}, "
+            string += "${entry.key.quote()}=${entry.value.quote()}, "
         }
         string += "]"
         return string
+    }
+}
+
+class DotLink(val first: DotNode, val second: DotNode) : AbstractDotNode() {
+    override fun toString(): String {
+        return "${first.name.quote()} -> ${second.name.quote()} $attrs"
     }
 }
 
@@ -53,12 +63,11 @@ fun generateGraphAsDotCode(ruleElements: Element, verifiedRules: List<Rule>) {
     val ruleNodes = mutableSetOf<DotNode>()
     val conclusionNodes = mutableSetOf<DotNode>()
     val premiseNodes = mutableSetOf<DotNode>()
-
+    val links = mutableSetOf<DotLink>()
 
     for (ruleElement in ruleElements.children) {
         val ruleName = ruleElement.getAttributeValue("nom")
         val premiseElements = ruleElement.getChild("premisses")
-        val premiseNames = premiseElements.children.map { it.getAttributeValue("nom") }
         val conclusion = ruleElement.getChild("conclusion")
         val conclusionName = conclusion.getAttributeValue("nom")
 
@@ -69,44 +78,52 @@ fun generateGraphAsDotCode(ruleElements: Element, verifiedRules: List<Rule>) {
         val conclusionNode = DotNode(conclusionName)
         conclusionNodes.add(conclusionNode)
 
-        for (premiseName in premiseNames) {
-            val premiseNode = DotNode(premiseName)
+        val ruleToConclusionLink = DotLink(ruleNode, conclusionNode)
+        links.add(ruleToConclusionLink)
+
+        for (premiseElement in premiseElements.children) {
+            val premiseNode = DotNode(premiseElement.getAttributeValue("nom"))
             premiseNodes.add(premiseNode)
+            val premiseToConclusionLink = DotLink(premiseNode, ruleNode)
+            links.add(premiseToConclusionLink)
+            premiseToConclusionLink.put("label", premiseElement.getAttributeValue("valeur") ?: "")
         }
+    }
 
-
-        if (ruleName in verifiedRulesNames) {
+    for (ruleNode in ruleNodes) {
+        if (ruleNode.name in verifiedRulesNames) {
             ruleNode.put("color", "red")
-            conclusionNode.put("color", "red")
-            for (premiseNode in premiseNodes) {
-                premiseNode.put("color", "red")
-            }
         } else {
             ruleNode.put("color", "lightblue")
-            conclusionNode.put("color", "lightblue")
-            for (premiseNode in premiseNodes) {
-                premiseNode.put("color", "lightblue")
-            }
         }
+    }
 
-        if (conclusionName in trueFacts) {
-
+    for (premiseNode in premiseNodes) {
+        if (premiseNode.name in trueFacts) {
+            premiseNode.put("color", "red")
         } else {
-
+            premiseNode.put("color", "lightblue")
         }
+    }
 
-        for (premiseName in premiseNames) {
-            if (premiseName in trueFacts) {
+    for (conclusionNode in conclusionNodes) {
+        if (conclusionNode.name in trueFacts) {
+            conclusionNode.put("color", "red")
+        } else {
+            conclusionNode.put("color", "lightblue")
+        }
+    }
 
-            } else {
-
-            }
+    for (link in links) {
+        if (link.first.name in verifiedRulesNames || link.first.name in trueFacts) {
+            link.put("color", "red")
         }
     }
 
     writer.writeln(ruleNodes.joinToString("\n"))
     writer.writeln(conclusionNodes.joinToString("\n"))
     writer.writeln(premiseNodes.joinToString("\n"))
+    writer.writeln(links.joinToString("\n"))
     writer.write("}")
     writer.close()
 }
