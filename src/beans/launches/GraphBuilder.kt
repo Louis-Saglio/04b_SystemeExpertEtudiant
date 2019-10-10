@@ -1,4 +1,4 @@
-package beans.interfaces
+package beans.launches
 
 import beans.regles.Rule
 import org.jdom2.Element

@@ -2,8 +2,6 @@ package beans.launches;
 
 import beans.faits.FactsBase;
 import beans.faits.IFact;
-import beans.interfaces.GraphBuilder;
-import beans.interfaces.GraphBuilderKt;
 import beans.interfaces.HumanInterface;
 import beans.interfaces.Motor;
 import beans.regles.Rule;
@@ -67,7 +65,6 @@ public class Program implements HumanInterface {
         System.out.println("*** Création du moteur ***");
         Motor m = new Motor(this);
         System.out.println("*** Ajout des règles ***");
-        GraphBuilder graphBuilder = new GraphBuilder("graph1");
 
         try {
             SAXBuilder sxb = new SAXBuilder();
@@ -84,7 +81,6 @@ public class Program implements HumanInterface {
             m.solve();
 
             System.out.println(m.getM_usedRules());
-            graphBuilder.generate(racine.getChild("baseDeRegles"), m.getM_usedRules());
 
             GraphBuilderKt.generateGraphAsDotCode(racine.getChild("baseDeRegles"), m.getM_usedRules());
             GraphBuilderKt.generatePng(new File("graph.txt"));
