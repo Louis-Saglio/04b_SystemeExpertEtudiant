@@ -12,14 +12,38 @@ fun BufferedWriter.writeln(string: String) {
 fun String.quote() = "\"$this\""
 
 
-class NodeAttrs(private val node: String = "") : HashMap<String, String>() {
+abstract class AbstractDotNode {
+    protected val attrs = NodeAttrs()
+
+    abstract override fun toString(): String
+
+    fun put(key: String, value: String) {
+        attrs[key] = value
+    }
+}
+
+
+class DotNode(val name: String) : AbstractDotNode() {
     override fun toString(): String {
-        var string = "$node ["
+        return "${name.quote()} $attrs"
+    }
+}
+
+
+class NodeAttrs : HashMap<String, String>() {
+    override fun toString(): String {
+        var string = "["
         for (entry in entries) {
-            string += "${entry.key}=${entry.value}, "
+            string += "${entry.key.quote()}=${entry.value.quote()}, "
         }
         string += "]"
         return string
+    }
+}
+
+class DotLink(val first: DotNode, val second: DotNode) : AbstractDotNode() {
+    override fun toString(): String {
+        return "${first.name.quote()} -> ${second.name.quote()} $attrs"
     }
 }
 
@@ -27,7 +51,7 @@ class NodeAttrs(private val node: String = "") : HashMap<String, String>() {
 fun generateGraphAsDotCode(ruleElements: Element, verifiedRules: List<Rule>) {
     println("Build graph")
     val writer = File("graph.txt").bufferedWriter()
-    writer.writeln("digraph \"graph1\" {")
+    writer.writeln("digraph {")
 
     val verifiedRulesNames = verifiedRules.map { it.name }
     val trueFacts = mutableSetOf<String>()
@@ -36,60 +60,70 @@ fun generateGraphAsDotCode(ruleElements: Element, verifiedRules: List<Rule>) {
         trueFacts.addAll(verifiedRule.premisses.map { it.name() })
     }
 
+    val ruleNodes = mutableSetOf<DotNode>()
+    val conclusionNodes = mutableSetOf<DotNode>()
+    val premiseNodes = mutableSetOf<DotNode>()
+    val links = mutableSetOf<DotLink>()
 
     for (ruleElement in ruleElements.children) {
         val ruleName = ruleElement.getAttributeValue("nom")
         val premiseElements = ruleElement.getChild("premisses")
-        val premiseNames = premiseElements.children.map { it.getAttributeValue("nom") }
         val conclusion = ruleElement.getChild("conclusion")
         val conclusionName = conclusion.getAttributeValue("nom")
 
-        var ruleNode = ruleName.quote()
-        var conclusionNode = conclusionName.quote()
+        val ruleNode = DotNode(ruleName)
+        ruleNodes.add(ruleNode)
+        ruleNode.put("style", "filled")
 
-        val premiseNodes = mutableListOf<String>()
+        val conclusionNode = DotNode(conclusionName)
+        conclusionNodes.add(conclusionNode)
+
+        val ruleToConclusionLink = DotLink(ruleNode, conclusionNode)
+        links.add(ruleToConclusionLink)
+
         for (premiseElement in premiseElements.children) {
-            val premiseAttr = NodeAttrs()
-            premiseAttr["label"] = (premiseElement.getAttributeValue("valeur") ?: "").quote()
-            premiseNodes.add("${premiseElement.getAttributeValue("nom").quote()} -> $ruleNode $premiseAttr")
+            val premiseNode = DotNode(premiseElement.getAttributeValue("nom"))
+            premiseNodes.add(premiseNode)
+            val premiseToConclusionLink = DotLink(premiseNode, ruleNode)
+            links.add(premiseToConclusionLink)
+            premiseToConclusionLink.put("label", premiseElement.getAttributeValue("valeur") ?: "")
         }
-
-        val ruleAttrs = NodeAttrs(ruleNode)
-        val premiseAttrs = mutableListOf<NodeAttrs>()
-        val conclusionAttrs = mutableListOf<NodeAttrs>()
-        ruleAttrs["style"] = "filled"
-        if (ruleName in verifiedRulesNames) {
-            ruleAttrs["color"] = "red"
-            val linkColor = NodeAttrs()
-            linkColor["color"] = "red"
-            conclusionNode += linkColor
-            for (i in premiseNodes.indices) {
-                val premiseRuleLinkAttrs = NodeAttrs()
-                premiseRuleLinkAttrs["color"] = "red"
-                premiseNodes[i] = premiseNodes[i] + premiseRuleLinkAttrs
-            }
-            for (premiseName in premiseNames) {
-                val attrs = NodeAttrs(premiseName.quote())
-                attrs["color"] = "red"
-                premiseAttrs.add(attrs)
-            }
-            val conclusionAttr = NodeAttrs(conclusionName.quote())
-            conclusionAttr["color"] = "red"
-            conclusionAttrs.add(conclusionAttr)
-        } else {
-            ruleAttrs["color"] = "lightblue"
-        }
-
-        ruleNode += " -> $conclusionNode"
-
-
-        writer.writeln(ruleAttrs.toString())
-        writer.writeln(premiseAttrs.joinToString("\n"))
-        writer.writeln(conclusionAttrs.joinToString("\n"))
-        writer.writeln(ruleNode)
-        writer.writeln(premiseNodes.joinToString("\n"))
     }
 
+    for (ruleNode in ruleNodes) {
+        if (ruleNode.name in verifiedRulesNames) {
+            ruleNode.put("color", "red")
+        } else {
+            ruleNode.put("color", "lightblue")
+        }
+    }
+
+    for (premiseNode in premiseNodes) {
+        if (premiseNode.name in trueFacts) {
+            premiseNode.put("color", "red")
+        } else {
+            premiseNode.put("color", "lightblue")
+        }
+    }
+
+    for (conclusionNode in conclusionNodes) {
+        if (conclusionNode.name in trueFacts) {
+            conclusionNode.put("color", "red")
+        } else {
+            conclusionNode.put("color", "lightblue")
+        }
+    }
+
+    for (link in links) {
+        if (link.first.name in verifiedRulesNames || link.first.name in trueFacts) {
+            link.put("color", "red")
+        }
+    }
+
+    writer.writeln(ruleNodes.joinToString("\n"))
+    writer.writeln(conclusionNodes.joinToString("\n"))
+    writer.writeln(premiseNodes.joinToString("\n"))
+    writer.writeln(links.joinToString("\n"))
     writer.write("}")
     writer.close()
 }
