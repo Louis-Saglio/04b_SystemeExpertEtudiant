@@ -85,9 +85,9 @@ public class Program implements HumanInterface {
 
             System.out.println(m.getM_usedRules());
             graphBuilder.generate(racine.getChild("baseDeRegles"), m.getM_usedRules());
-            graphBuilder.export();
 
             GraphBuilderKt.generateGraphAsDotCode(racine.getChild("baseDeRegles"), m.getM_usedRules());
+            GraphBuilderKt.generatePng(new File("graph.txt"));
 
 
         } catch (Exception exc) {

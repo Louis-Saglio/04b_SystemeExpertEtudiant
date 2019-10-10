@@ -3,22 +3,16 @@ package beans.interfaces;
 import beans.regles.Rule;
 import guru.nidi.graphviz.attribute.Color;
 import guru.nidi.graphviz.attribute.Label;
-import guru.nidi.graphviz.attribute.Rank;
-import guru.nidi.graphviz.attribute.Rank.RankDir;
 import guru.nidi.graphviz.attribute.Style;
-import guru.nidi.graphviz.engine.Format;
-import guru.nidi.graphviz.engine.Graphviz;
-import guru.nidi.graphviz.model.Graph;
 import guru.nidi.graphviz.model.Link;
 import guru.nidi.graphviz.model.Node;
 import org.jdom2.Element;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static guru.nidi.graphviz.model.Factory.*;
+import static guru.nidi.graphviz.model.Factory.node;
+import static guru.nidi.graphviz.model.Factory.to;
 
 public class GraphBuilder {
   private String name;
@@ -33,6 +27,9 @@ public class GraphBuilder {
   }
 
   public void generate(Element rules, List<Rule> usedRules) {
+    // The graph generation via the graphviz sdk is bugged.
+    // the preferred hypothesis is a bug in the to function or the Link class
+    // However further investigation is required to confirm or invalidate this hypothesis
     HashSet<String> ruleNames = usedRules.stream()
         .map(Rule::getName)
         .collect(Collectors.toCollection(HashSet::new));
@@ -100,20 +97,6 @@ public class GraphBuilder {
       addNode(conclusionNode);
       addNode(ruleNode);
     }
-  }
-
-  public void export() throws IOException {
-    // The graph generation via the graphviz sdk is bugged.
-    // the preferred hypothesis is a bug in the to function or the Link class
-    // However further investigation is required to confirm or invalidate this hypothesis
-    Graph g = graph(name)
-        .directed()
-        .graphAttr()
-        .with(Rank.dir(RankDir.TOP_TO_BOTTOM))
-        .with(nodes);
-
-    Graphviz.fromGraph(g).render(Format.DOT).toFile(new File(name + ".txt"));
-    Graphviz.fromGraph(g).render(Format.PNG).toFile(new File(name + ".png"));
   }
 
 }

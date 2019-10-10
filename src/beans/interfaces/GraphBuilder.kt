@@ -93,3 +93,7 @@ fun generateGraphAsDotCode(ruleElements: Element, verifiedRules: List<Rule>) {
     writer.write("}")
     writer.close()
 }
+
+fun generatePng(inputFile: File) {
+    Runtime.getRuntime().exec("""dot -Tpng ${inputFile.absolutePath} -o outfile.png""").waitFor()
+}
